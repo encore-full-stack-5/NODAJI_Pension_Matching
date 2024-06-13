@@ -1,9 +1,9 @@
-package com.example.controller;
+package com.example.pensionMatching.controller;
 
 
-import com.example.service.PensionMatchingService;
+import com.example.pensionMatching.domain.dto.request.MatchItem;
+import com.example.pensionMatching.service.PensionMatchingService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,7 +17,7 @@ public class PensionMatchingController {
     private final PensionMatchingService pensionMatchingService;
 
     @PostMapping("/matching")
-    public void matchingTicket(@RequestBody String userId){
-        pensionMatchingService.matchingTicket(userId);
+    public void matchingTicket(@RequestBody MatchItem matchItem){
+        pensionMatchingService.matchingTicket(matchItem);
     }
 }
