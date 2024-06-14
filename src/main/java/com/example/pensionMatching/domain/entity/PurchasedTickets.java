@@ -1,4 +1,4 @@
-package com.example.domain.entity;
+package com.example.pensionMatching.domain.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -11,6 +11,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Getter
@@ -59,5 +60,8 @@ public class PurchasedTickets {
 
     @Column(name = "CREATE_AT")
     private LocalDateTime createAt;
+
+    @Column(name = "RESULT") @Setter
+    private Integer result;
 
 }
