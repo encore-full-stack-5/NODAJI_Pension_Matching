@@ -1,8 +1,8 @@
 package com.example.pensionMatching.service;
 
-import com.example.pensionMatching.domain.dto.request.MatchItem;
+import com.example.pensionMatching.domain.dto.request.PensionWinAndBonus;
 
 public interface PensionMatchingService {
 
-    void matchingTicket(MatchItem matchItem);
+    void matchingTicket(PensionWinAndBonus drawResult);
 }

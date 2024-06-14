@@ -1,5 +1,6 @@
 package com.example.pensionMatching.api;
 
+import com.example.pensionMatching.domain.entity.PensionWinNum;
 import com.example.pensionMatching.domain.entity.PurchasedTickets;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,13 +19,12 @@ public class ApiWinDraw {
     public static List<Map<String, Object>> failDrawList = new ArrayList<>();
 
     @Async
-    public List<PurchasedTickets> getPurchasedTickets(Integer round, String userId) {
+    public List<PurchasedTickets> getPurchasedTickets(Integer round) {
         List<PurchasedTickets> pensionBuyingTickets = null;
         try {
-            pensionBuyingTickets = feignWinDraw.getPensionBuyingTickets(round, userId);
+            pensionBuyingTickets = feignWinDraw.getPensionBuyingTickets(round);
         } catch (Exception e) {
             Map<String , Object> map = new HashMap<>();
-            map.put("userId", userId);
             map.put("round", round);
             failTicketList.add(map);
         }
@@ -32,17 +32,17 @@ public class ApiWinDraw {
         return pensionBuyingTickets;
     }
 
-    @Async
-    public Object getDrawByRound(Integer round){
-        Object drawByRound = null;
-        try {
-            drawByRound = feignWinDraw.getDrawByRound(round);
-        } catch (Exception e) {
-            Map<String , Object> map = new HashMap<>();
-            map.put("round", round);
-            failDrawList.add(map);
-        }
-
-        return drawByRound;
-    }
+    // @Async
+    // public PensionWinNum getDrawByRound(Integer round){
+    //     PensionWinNum drawByRound = null;
+    //     try {
+    //         drawByRound = feignWinDraw.getDrawByRound(round);
+    //     } catch (Exception e) {
+    //         Map<String , Object> map = new HashMap<>();
+    //         map.put("round", round);
+    //         failDrawList.add(map);
+    //     }
+    //
+    //     return drawByRound;
+    // }
 }

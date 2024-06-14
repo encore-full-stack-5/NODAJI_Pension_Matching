@@ -2,9 +2,11 @@ package com.example.pensionMatching.service;
 
 
 import com.example.pensionMatching.api.ApiWinDraw;
-import com.example.pensionMatching.api.FeignWinDraw;
-import com.example.pensionMatching.domain.dto.request.MatchItem;
+import com.example.pensionMatching.domain.dto.request.PensionWinAndBonus;
+import com.example.pensionMatching.domain.entity.PensionBonusNum;
+import com.example.pensionMatching.domain.entity.PensionWinNum;
 import com.example.pensionMatching.domain.entity.PurchasedTickets;
+import com.example.pensionMatching.domain.repository.PurchasedTicketsRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,12 +17,68 @@ import org.springframework.stereotype.Service;
 public class PensionMatchingServiceImpl implements PensionMatchingService{
 
     private final ApiWinDraw apiWinDraw;
+    private final PurchasedTicketsRepository purchasedTicketsRepository;
 
     @Override
-    public void matchingTicket(MatchItem matchItem) {
+    public void matchingTicket(PensionWinAndBonus drawResult) {
         List<PurchasedTickets> purchasedTickets =
-            apiWinDraw.getPurchasedTickets(matchItem.round(), matchItem.userId());
+            apiWinDraw.getPurchasedTickets(drawResult.pensionWinNum().getDrawRound());
 
-        Object drawByRound = apiWinDraw.getDrawByRound(matchItem.round());
+        ticketWinMatchingAndSave(drawResult, purchasedTickets);
+    }
+
+    private void ticketWinMatchingAndSave(PensionWinAndBonus drawResult, List<PurchasedTickets> purchasedTickets) {
+        int result = 0;
+        for(PurchasedTickets purchasedTicket : purchasedTickets) {
+            if(purchasedTicket.getSixth() == drawResult.pensionWinNum().getSixthNum()){
+                if(purchasedTicket.getFifth() == drawResult.pensionWinNum().getFifthNum()){
+                    if(purchasedTicket.getFourth() == drawResult.pensionWinNum().getFourthNum()){
+                        if(purchasedTicket.getThird() == drawResult.pensionWinNum().getThirdNum()){
+                            if(purchasedTicket.getSecond() == drawResult.pensionWinNum().getSecondNum()){
+                                if(purchasedTicket.getFirst() == drawResult.pensionWinNum().getFirstNum()){
+                                    if(purchasedTicket.getGroupNum() == drawResult.pensionWinNum().getGroupNum()){
+                                        result = 1;
+                                    } else {
+                                        result = 2;
+                                    }
+                                } else {
+                                    result = 3;
+                                }
+                            } else {
+                                result = 4;
+                            }
+                        } else {
+                            result = 5;
+                        }
+                    } else {
+                        result = 6;
+                    }
+                } else {
+                    result = 7;
+                }
+            }
+            purchasedTicket.setResult(result);
+
+            if(result == 0){
+                ticketBonusMatching(drawResult.pensionBonusNum(), purchasedTicket);
+            }
+
+            purchasedTicketsRepository.save(purchasedTicket);
+        }
+    }
+
+    private void ticketBonusMatching(PensionBonusNum pensionBonusNum,
+        PurchasedTickets purchasedTicket) {
+        int result = 0;
+        if(purchasedTicket.getSixth() == pensionBonusNum.getSixthNum() &&
+            purchasedTicket.getFifth() == pensionBonusNum.getFifthNum() &&
+            purchasedTicket.getFourth() == pensionBonusNum.getFourthNum() &&
+            purchasedTicket.getThird() == pensionBonusNum.getThirdNum() &&
+            purchasedTicket.getSecond() == pensionBonusNum.getSecondNum() &&
+            purchasedTicket.getFirst() == pensionBonusNum.getFirstNum()
+        ){
+            result = 8;
+        }
+        purchasedTicket.setResult(result);
     }
 }
