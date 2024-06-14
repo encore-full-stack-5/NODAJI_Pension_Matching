@@ -6,6 +6,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -59,9 +60,12 @@ public class PurchasedTickets {
     private Integer sixth;
 
     @Column(name = "CREATE_AT")
-    private LocalDateTime createAt;
+    private LocalDate createAt;
 
     @Column(name = "RESULT") @Setter
     private Integer result;
+
+    @Column(name = "DRAW_DATE") @Setter
+    private LocalDate drawDate;
 
 }

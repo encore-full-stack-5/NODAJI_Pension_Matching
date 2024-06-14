@@ -3,6 +3,7 @@ package com.example.pensionMatching.service;
 
 import com.example.pensionMatching.api.ApiWinDraw;
 import com.example.pensionMatching.domain.dto.request.PensionWinAndBonus;
+import com.example.pensionMatching.domain.dto.response.TicketResult;
 import com.example.pensionMatching.domain.entity.PensionBonusNum;
 import com.example.pensionMatching.domain.entity.PensionWinNum;
 import com.example.pensionMatching.domain.entity.PurchasedTickets;
@@ -27,9 +28,24 @@ public class PensionMatchingServiceImpl implements PensionMatchingService{
         ticketWinMatchingAndSave(drawResult, purchasedTickets);
     }
 
+    @Override
+    public List<TicketResult> getAllTicket(String userId) {
+        return purchasedTicketsRepository.findByUserId(userId);
+    }
+
+    @Override
+    public List<TicketResult> getAllTicketByResult(String userId, Integer result) {
+        if(result > 0) {
+            return purchasedTicketsRepository.findByUserIdAndResultGreaterThan(userId, 0);
+        } else {
+            return purchasedTicketsRepository.findByUserIdAndResultIs(userId, 0);
+        }
+    }
+
     private void ticketWinMatchingAndSave(PensionWinAndBonus drawResult, List<PurchasedTickets> purchasedTickets) {
         int result = 0;
         for(PurchasedTickets purchasedTicket : purchasedTickets) {
+            purchasedTicket.setDrawDate(drawResult.pensionWinNum().getDrawDate());
             if(purchasedTicket.getSixth() == drawResult.pensionWinNum().getSixthNum()){
                 if(purchasedTicket.getFifth() == drawResult.pensionWinNum().getFifthNum()){
                     if(purchasedTicket.getFourth() == drawResult.pensionWinNum().getFourthNum()){
