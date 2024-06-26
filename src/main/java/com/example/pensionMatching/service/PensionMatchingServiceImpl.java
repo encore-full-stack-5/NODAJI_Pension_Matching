@@ -47,8 +47,8 @@ public class PensionMatchingServiceImpl implements PensionMatchingService{
     }
 
     private void ticketWinMatchingAndSave(PensionWinAndBonus drawResult, List<PurchasedTickets> purchasedTickets) {
-        int result = 0;
         for(PurchasedTickets purchasedTicket : purchasedTickets) {
+            int result = 0;
             purchasedTicket.setDrawDate(drawResult.pensionWinNum().getDrawDate());
 
             if(purchasedTicket.getSixth() == drawResult.pensionWinNum().getSixthNum()){
