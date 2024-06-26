@@ -32,12 +32,6 @@ public class PurchasedTickets {
     @Column(name = "USER_ID")
     private String userId;
 
-    // @Column(name = "USER_EMAIL")
-    // private String userEmail;
-    //
-    // @Column(name = "USER_ACC_BALANCE")
-    // private Long userAccBalance;
-
     @Column(name = "GROUP_NUM")
     private Integer groupNum;
 
