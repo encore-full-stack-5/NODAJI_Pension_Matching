@@ -1,6 +1,7 @@
 package com.example.pensionMatching.service;
 
 
+import com.example.pensionMatching.api.ApiPayment;
 import com.example.pensionMatching.api.ApiWinDraw;
 import com.example.pensionMatching.domain.dto.request.KafkaUserDto;
 import com.example.pensionMatching.domain.dto.request.PensionWinAndBonus;
@@ -9,7 +10,7 @@ import com.example.pensionMatching.domain.entity.PensionBonusNum;
 import com.example.pensionMatching.domain.entity.PensionWinNum;
 import com.example.pensionMatching.domain.entity.PurchasedTickets;
 import com.example.pensionMatching.domain.repository.PurchasedTicketsRepository;
-// import com.example.pensionMatching.kafka.producer.KafkaProducer;
+import com.example.pensionMatching.kafka.producer.KafkaProducer;
 import java.time.LocalDate;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -21,8 +22,9 @@ import org.springframework.stereotype.Service;
 public class PensionMatchingServiceImpl implements PensionMatchingService{
 
     private final ApiWinDraw apiWinDraw;
+    private final ApiPayment apiPayment;
     private final PurchasedTicketsRepository purchasedTicketsRepository;
-    // private final KafkaProducer kafkaProducer;
+    private final KafkaProducer kafkaProducer;
 
     @Override
     public void matchingTicket(PensionWinAndBonus drawResult) {
@@ -100,10 +102,15 @@ public class PensionMatchingServiceImpl implements PensionMatchingService{
 
             purchasedTicketsRepository.save(ticket);
 
+            if(result != 0) {
+                // KafkaUserDto kafkaUserDto = new KafkaUserDto(ticket.getUserId(),
+                KafkaUserDto kafkaUserDto = new KafkaUserDto("11111111-1111-1111-1111-111111111111",
+                    getPrize(result), "연금복권", result);
+                kafkaProducer.send(kafkaUserDto, "email-topic");
 
-            // KafkaUserDto kafkaUserDto = new KafkaUserDto("00000000-0000-0000-0000-000000000000", 7_000_000L, "연금복권", 1);
-            // kafkaProducer.send(kafkaUserDto, "email-topic");
-
+                // apiPayment.winResult(ticket.getUserId(), result, getPrize(result));
+                // apiPayment.winResult("11111111-1111-1111-1111-111111111111", result, getPrize(result));
+            }
         }
     }
 
@@ -121,5 +128,21 @@ public class PensionMatchingServiceImpl implements PensionMatchingService{
             return result;
         }
         return result;
+    }
+
+    private Long getPrize(Integer result) {
+        if (result == 1)
+            return 7_000_000L;
+        else if (result == 2 || result == 3 || result == 8)
+            return 1_000_0000L;
+        else if (result == 4)
+            return 100_000L;
+        else if (result == 5)
+            return 50_000L;
+        else if (result == 6)
+            return 5_000L;
+        else if (result == 7)
+            return 1_000L;
+        return 0L;
     }
 }
