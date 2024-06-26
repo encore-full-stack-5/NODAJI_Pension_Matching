@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: pensionMatching
+  datasource:
+    url: jdbc:mysql://localhost:3306/lottery_matching?characterEncoding=UTF-8&serverTimezone=Asia/Seoul
+    username: root
+    password: 1234
+  jpa:
+    hibernate:
+      ddl-auto: create
+    show-sql: true
+  kafka:
+    bootstrap-servers: 192.168.0.20:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
+server:
+  port: 8082

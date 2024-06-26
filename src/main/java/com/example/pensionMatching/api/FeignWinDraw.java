@@ -8,10 +8,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
-@FeignClient
+@FeignClient(name = "feignWinDraw", url = "localhost:8081")
 public interface FeignWinDraw {
 
-    @GetMapping("/api/v1/pension")
+    @GetMapping("/api/v1/pension/purchased")
     List<PurchasedTickets> getPensionBuyingTickets(@RequestParam Integer round);
 
     // @GetMapping("/api/v1/pension/draw/{round}")

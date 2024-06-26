@@ -29,16 +29,6 @@ public class PensionMatchingController {
         pensionMatchingService.matchingTicket(drawResult);
     }
 
-    // @GetMapping("/{userId}")
-    // public List<TicketResult> getAllTicket(@PathVariable String userId){
-    //     return pensionMatchingService.getAllTicket(userId);
-    // }
-    //
-    // @GetMapping("/{userId}/{result}")
-    // public List<TicketResult> getAllTicketByResult(@PathVariable String userId, @PathVariable Integer result){
-    //     return pensionMatchingService.getAllTicketByResult(userId, result);
-    // }
-
     @GetMapping("/{userId}")
     public List<TicketResult> getAllTicket(
         @PathVariable String userId,

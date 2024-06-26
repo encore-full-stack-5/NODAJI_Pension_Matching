@@ -2,12 +2,15 @@ package com.example.pensionMatching.service;
 
 
 import com.example.pensionMatching.api.ApiWinDraw;
+import com.example.pensionMatching.domain.dto.request.KafkaUserDto;
 import com.example.pensionMatching.domain.dto.request.PensionWinAndBonus;
 import com.example.pensionMatching.domain.dto.response.TicketResult;
 import com.example.pensionMatching.domain.entity.PensionBonusNum;
 import com.example.pensionMatching.domain.entity.PensionWinNum;
 import com.example.pensionMatching.domain.entity.PurchasedTickets;
 import com.example.pensionMatching.domain.repository.PurchasedTicketsRepository;
+// import com.example.pensionMatching.kafka.producer.KafkaProducer;
+import java.time.LocalDate;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -19,6 +22,7 @@ public class PensionMatchingServiceImpl implements PensionMatchingService{
 
     private final ApiWinDraw apiWinDraw;
     private final PurchasedTicketsRepository purchasedTicketsRepository;
+    // private final KafkaProducer kafkaProducer;
 
     @Override
     public void matchingTicket(PensionWinAndBonus drawResult) {
@@ -46,6 +50,7 @@ public class PensionMatchingServiceImpl implements PensionMatchingService{
         int result = 0;
         for(PurchasedTickets purchasedTicket : purchasedTickets) {
             purchasedTicket.setDrawDate(drawResult.pensionWinNum().getDrawDate());
+
             if(purchasedTicket.getSixth() == drawResult.pensionWinNum().getSixthNum()){
                 if(purchasedTicket.getFifth() == drawResult.pensionWinNum().getFifthNum()){
                     if(purchasedTicket.getFourth() == drawResult.pensionWinNum().getFourthNum()){
@@ -73,17 +78,36 @@ public class PensionMatchingServiceImpl implements PensionMatchingService{
                     result = 7;
                 }
             }
-            purchasedTicket.setResult(result);
 
             if(result == 0){
-                ticketBonusMatching(drawResult.pensionBonusNum(), purchasedTicket);
+                result = ticketBonusMatching(drawResult.pensionBonusNum(), purchasedTicket);
             }
 
-            purchasedTicketsRepository.save(purchasedTicket);
+            PurchasedTickets ticket = PurchasedTickets.builder()
+                .round(purchasedTicket.getRound())
+                .userId(purchasedTicket.getUserId())
+                .groupNum(purchasedTicket.getGroupNum())
+                .first(purchasedTicket.getFirst())
+                .second(purchasedTicket.getSecond())
+                .third(purchasedTicket.getThird())
+                .fourth(purchasedTicket.getFourth())
+                .fifth(purchasedTicket.getFifth())
+                .sixth(purchasedTicket.getSixth())
+                .createAt(LocalDate.now())
+                .result(result)
+                .drawDate(drawResult.pensionWinNum().getDrawDate())
+                .build();
+
+            purchasedTicketsRepository.save(ticket);
+
+
+            // KafkaUserDto kafkaUserDto = new KafkaUserDto("00000000-0000-0000-0000-000000000000", 7_000_000L, "연금복권", 1);
+            // kafkaProducer.send(kafkaUserDto, "email-topic");
+
         }
     }
 
-    private void ticketBonusMatching(PensionBonusNum pensionBonusNum,
+    private Integer ticketBonusMatching(PensionBonusNum pensionBonusNum,
         PurchasedTickets purchasedTicket) {
         int result = 0;
         if(purchasedTicket.getSixth() == pensionBonusNum.getSixthNum() &&
@@ -94,7 +118,8 @@ public class PensionMatchingServiceImpl implements PensionMatchingService{
             purchasedTicket.getFirst() == pensionBonusNum.getFirstNum()
         ){
             result = 8;
+            return result;
         }
-        purchasedTicket.setResult(result);
+        return result;
     }
 }

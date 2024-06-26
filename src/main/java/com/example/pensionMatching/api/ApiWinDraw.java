@@ -32,17 +32,4 @@ public class ApiWinDraw {
         return pensionBuyingTickets;
     }
 
-    // @Async
-    // public PensionWinNum getDrawByRound(Integer round){
-    //     PensionWinNum drawByRound = null;
-    //     try {
-    //         drawByRound = feignWinDraw.getDrawByRound(round);
-    //     } catch (Exception e) {
-    //         Map<String , Object> map = new HashMap<>();
-    //         map.put("round", round);
-    //         failDrawList.add(map);
-    //     }
-    //
-    //     return drawByRound;
-    // }
 }
