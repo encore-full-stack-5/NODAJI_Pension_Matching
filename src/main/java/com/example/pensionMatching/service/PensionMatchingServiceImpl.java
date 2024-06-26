@@ -19,7 +19,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 
-public class PensionMatchingServiceImpl implements PensionMatchingService{
+public class PensionMatchingServiceImpl implements PensionMatchingService, TicketService{
 
     private final ApiWinDraw apiWinDraw;
     private final ApiPayment apiPayment;
@@ -31,7 +31,9 @@ public class PensionMatchingServiceImpl implements PensionMatchingService{
         List<PurchasedTickets> purchasedTickets =
             apiWinDraw.getPurchasedTickets(drawResult.pensionWinNum().getDrawRound());
 
-        ticketWinMatchingAndSave(drawResult, purchasedTickets);
+        List<PurchasedTickets> ticketsList = ticketWinMatching(drawResult, purchasedTickets);
+
+        purchasedTicketsRepository.saveAll(ticketsList);
     }
 
     @Override
@@ -48,9 +50,10 @@ public class PensionMatchingServiceImpl implements PensionMatchingService{
         }
     }
 
-    private void ticketWinMatchingAndSave(PensionWinAndBonus drawResult, List<PurchasedTickets> purchasedTickets) {
+    @Override
+    public List<PurchasedTickets> ticketWinMatching(PensionWinAndBonus drawResult, List<PurchasedTickets> purchasedTickets) {
         for(PurchasedTickets purchasedTicket : purchasedTickets) {
-            int result = 0;
+            Integer result = 0; // 미추첨
             purchasedTicket.setDrawDate(drawResult.pensionWinNum().getDrawDate());
 
             if(purchasedTicket.getSixth() == drawResult.pensionWinNum().getSixthNum()){
@@ -79,44 +82,33 @@ public class PensionMatchingServiceImpl implements PensionMatchingService{
                 } else {
                     result = 7;
                 }
+            }else {
+                result = -1;
             }
 
-            if(result == 0){
-                result = ticketBonusMatching(drawResult.pensionBonusNum(), purchasedTicket);
+            if(result == -1){
+                result = ticketBonusMatching(drawResult.pensionBonusNum(), purchasedTicket, result);
             }
 
-            PurchasedTickets ticket = PurchasedTickets.builder()
-                .round(purchasedTicket.getRound())
-                .userId(purchasedTicket.getUserId())
-                .groupNum(purchasedTicket.getGroupNum())
-                .first(purchasedTicket.getFirst())
-                .second(purchasedTicket.getSecond())
-                .third(purchasedTicket.getThird())
-                .fourth(purchasedTicket.getFourth())
-                .fifth(purchasedTicket.getFifth())
-                .sixth(purchasedTicket.getSixth())
-                .createAt(LocalDate.now())
-                .result(result)
-                .drawDate(drawResult.pensionWinNum().getDrawDate())
-                .build();
+            purchasedTicket.setResult(result);
 
-            purchasedTicketsRepository.save(ticket);
-
-            if(result != 0) {
-                // KafkaUserDto kafkaUserDto = new KafkaUserDto(ticket.getUserId(),
+            if(result > 0) {
+                // KafkaUserDto kafkaUserDto = new KafkaUserDto(purchasedTicket.getUserId(),
                 KafkaUserDto kafkaUserDto = new KafkaUserDto("11111111-1111-1111-1111-111111111111",
                     getPrize(result), "연금복권", result);
                 kafkaProducer.send(kafkaUserDto, "email-topic");
 
-                // apiPayment.winResult(ticket.getUserId(), result, getPrize(result));
+                // apiPayment.winResult(purchasedTicket.getUserId(), result, getPrize(result));
                 // apiPayment.winResult("11111111-1111-1111-1111-111111111111", result, getPrize(result));
             }
         }
+
+        return purchasedTickets;
     }
 
-    private Integer ticketBonusMatching(PensionBonusNum pensionBonusNum,
-        PurchasedTickets purchasedTicket) {
-        int result = 0;
+    @Override
+    public Integer ticketBonusMatching(PensionBonusNum pensionBonusNum,
+        PurchasedTickets purchasedTicket, Integer result) {
         if(purchasedTicket.getSixth() == pensionBonusNum.getSixthNum() &&
             purchasedTicket.getFifth() == pensionBonusNum.getFifthNum() &&
             purchasedTicket.getFourth() == pensionBonusNum.getFourthNum() &&
@@ -125,12 +117,12 @@ public class PensionMatchingServiceImpl implements PensionMatchingService{
             purchasedTicket.getFirst() == pensionBonusNum.getFirstNum()
         ){
             result = 8;
-            return result;
         }
         return result;
     }
 
-    private Long getPrize(Integer result) {
+    @Override
+    public Long getPrize(Integer result) {
         if (result == 1)
             return 7_000_000L;
         else if (result == 2 || result == 3 || result == 8)
