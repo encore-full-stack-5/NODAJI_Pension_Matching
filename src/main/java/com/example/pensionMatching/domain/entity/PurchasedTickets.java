@@ -56,8 +56,8 @@ public class PurchasedTickets {
     @Column(name = "CREATE_AT")
     private LocalDate createAt;
 
-    @Column(name = "RESULT") @Setter
-    private Integer result;
+    @Column(name = "RESULT", nullable = false) @Setter
+    private Integer result = 0;
 
     @Column(name = "DRAW_DATE") @Setter
     private LocalDate drawDate;

@@ -8,16 +8,25 @@ import com.example.pensionMatching.domain.entity.PurchasedTickets;
 import com.example.pensionMatching.service.PensionMatchingService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
+@CrossOrigin(origins = "*"
+    ,methods = {
+    RequestMethod.GET,
+    RequestMethod.POST,
+    RequestMethod.DELETE,
+    RequestMethod.PUT,
+    RequestMethod.OPTIONS}, allowedHeaders = "*")
 @RequestMapping("/api/v1/pension")
 public class PensionMatchingController {
 
@@ -27,6 +36,11 @@ public class PensionMatchingController {
     @PostMapping("/matching")
     public void matchingTicket(@RequestBody PensionWinAndBonus drawResult){
         pensionMatchingService.matchingTicket(drawResult);
+    }
+
+    @PostMapping("/purchased")
+    public void purchasedTicket(@RequestBody List<PurchasedTickets> purchasedTickets){
+        pensionMatchingService.insertTickets(purchasedTickets);
     }
 
     @GetMapping("/{userId}")

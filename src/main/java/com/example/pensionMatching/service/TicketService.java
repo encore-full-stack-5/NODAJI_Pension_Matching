@@ -6,7 +6,7 @@ import com.example.pensionMatching.domain.entity.PurchasedTickets;
 import java.util.List;
 
 public interface TicketService {
-    List<PurchasedTickets> ticketWinMatching(PensionWinAndBonus drawResult, List<PurchasedTickets> purchasedTickets);
+    Integer ticketWinMatching(PensionWinAndBonus drawResult, PurchasedTickets purchasedTicket);
 
     Integer ticketBonusMatching(PensionBonusNum pensionBonusNum, PurchasedTickets purchasedTicket, Integer result);
 

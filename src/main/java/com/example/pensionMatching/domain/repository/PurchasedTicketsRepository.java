@@ -12,4 +12,6 @@ public interface PurchasedTicketsRepository extends JpaRepository<PurchasedTicke
     List<TicketResult> findByUserIdAndResultGreaterThan(String userId, Integer result);
 
     List<TicketResult> findByUserIdAndResultIs(String userId, Integer result);
+
+    List<PurchasedTickets> findByRound(Integer drawRound);
 }
