@@ -5,9 +5,11 @@ import com.example.pensionMatching.domain.dto.request.PensionWinAndBonus;
 import com.example.pensionMatching.domain.dto.response.TicketResult;
 import com.example.pensionMatching.domain.entity.PensionWinNum;
 import com.example.pensionMatching.domain.entity.PurchasedTickets;
+import com.example.pensionMatching.global.util.TokenInfo;
 import com.example.pensionMatching.service.PensionMatchingService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -38,20 +40,20 @@ public class PensionMatchingController {
         pensionMatchingService.matchingTicket(drawResult);
     }
 
-    @PostMapping("/purchased")
-    public void purchasedTicket(@RequestBody List<PurchasedTickets> purchasedTickets){
-        pensionMatchingService.insertTickets(purchasedTickets);
-    }
+    // @PostMapping("/purchased")
+    // public void purchasedTicket(@RequestBody List<PurchasedTickets> purchasedTickets){
+    //     pensionMatchingService.insertTickets(purchasedTickets);
+    // }
 
-    @GetMapping("/{userId}")
+    @GetMapping
     public List<TicketResult> getAllTicket(
-        @PathVariable String userId,
+        @AuthenticationPrincipal TokenInfo tokenInfo,
         @RequestParam(value = "result", required = false) Integer result) {
 
         if (result != null) {
-            return pensionMatchingService.getAllTicketByResult(userId, result);
+            return pensionMatchingService.getAllTicketByResult(tokenInfo, result);
         } else {
-            return pensionMatchingService.getAllTicket(userId);
+            return pensionMatchingService.getAllTicket(tokenInfo);
         }
     }
 

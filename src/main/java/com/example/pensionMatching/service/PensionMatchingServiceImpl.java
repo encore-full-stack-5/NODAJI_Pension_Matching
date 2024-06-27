@@ -10,6 +10,7 @@ import com.example.pensionMatching.domain.entity.PensionBonusNum;
 import com.example.pensionMatching.domain.entity.PensionWinNum;
 import com.example.pensionMatching.domain.entity.PurchasedTickets;
 import com.example.pensionMatching.domain.repository.PurchasedTicketsRepository;
+import com.example.pensionMatching.global.util.TokenInfo;
 import com.example.pensionMatching.kafka.dto.KafkaStatus;
 import com.example.pensionMatching.kafka.producer.KafkaProducer;
 import jakarta.transaction.Transactional;
@@ -40,6 +41,7 @@ public class PensionMatchingServiceImpl implements PensionMatchingService, Ticke
         List<PurchasedTickets> purchasedTickets = purchasedTicketsRepository.findByRound(
             drawResult.pensionWinNum().getDrawRound());
         // apiWinDraw.getPurchasedTickets(drawResult.pensionWinNum().getDrawRound());
+        System.out.println(purchasedTickets);
 
         purchasedTickets.forEach((purchasedTicket) -> {
             Integer result = ticketWinMatching(drawResult, purchasedTicket);
@@ -49,16 +51,16 @@ public class PensionMatchingServiceImpl implements PensionMatchingService, Ticke
     }
 
     @Override
-    public List<TicketResult> getAllTicket(String userId) {
-        return purchasedTicketsRepository.findByUserId(userId);
+    public List<TicketResult> getAllTicket(TokenInfo tokenInfo) {
+        return purchasedTicketsRepository.findByUserId(tokenInfo.userId());
     }
 
     @Override
-    public List<TicketResult> getAllTicketByResult(String userId, Integer result) {
+    public List<TicketResult> getAllTicketByResult(TokenInfo tokenInfo, Integer result) {
         if (result > 0) {
-            return purchasedTicketsRepository.findByUserIdAndResultGreaterThan(userId, 0);
+            return purchasedTicketsRepository.findByUserIdAndResultGreaterThan(tokenInfo.userId(), 0);
         } else {
-            return purchasedTicketsRepository.findByUserIdAndResultIs(userId, 0);
+            return purchasedTicketsRepository.findByUserIdAndResultIs(tokenInfo.userId(), 0);
         }
     }
 
@@ -107,8 +109,7 @@ public class PensionMatchingServiceImpl implements PensionMatchingService, Ticke
         }
 
         if (result > 0) {
-            // KafkaUserDto kafkaUserDto = new KafkaUserDto(purchasedTicket.getUserId(),
-            KafkaUserDto kafkaUserDto = new KafkaUserDto("11111111-1111-1111-1111-111111111111",
+            KafkaUserDto kafkaUserDto = new KafkaUserDto(purchasedTicket.getUserId(),
                 getPrize(result), "연금복권", result);
             kafkaProducer.send(kafkaUserDto, "email-topic");
 
