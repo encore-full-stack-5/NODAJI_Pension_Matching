@@ -16,6 +16,8 @@ import com.example.pensionMatching.kafka.producer.KafkaProducer;
 import jakarta.transaction.Transactional;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
@@ -48,6 +50,18 @@ public class PensionMatchingServiceImpl implements PensionMatchingService, Ticke
             purchasedTicket.setResult(result);
             purchasedTicket.setDrawDate(drawResult.pensionWinNum().getDrawDate());
         });
+
+        Set<String> userIdsWithPositiveResult = purchasedTickets.stream()
+            .filter(purchasedTicket -> purchasedTicket.getResult() > 0)
+            .map(PurchasedTickets::getUserId)
+            .collect(Collectors.toSet());
+
+        userIdsWithPositiveResult.forEach(userId -> {
+            KafkaUserDto kafkaUserDto = new KafkaUserDto(userId,
+                1, "연금복권", 1, drawResult.pensionWinNum().getDrawRound());
+            kafkaProducer.send(kafkaUserDto, "email-topic");
+        });
+
     }
 
     @Override
@@ -108,14 +122,14 @@ public class PensionMatchingServiceImpl implements PensionMatchingService, Ticke
             result = ticketBonusMatching(drawResult.pensionBonusNum(), purchasedTicket, result);
         }
 
-        if (result > 0) {
-            KafkaUserDto kafkaUserDto = new KafkaUserDto(purchasedTicket.getUserId(),
-                getPrize(result), "연금복권", result);
-            kafkaProducer.send(kafkaUserDto, "email-topic");
-
-            // apiPayment.winResult(purchasedTicket.getUserId(), result, getPrize(result));
-            // apiPayment.winResult("11111111-1111-1111-1111-111111111111", result, getPrize(result));
-        }
+        // if (result > 0) {
+        //     KafkaUserDto kafkaUserDto = new KafkaUserDto(purchasedTicket.getUserId(),
+        //         getPrize(result), "연금복권", result, purchasedTicket.getRound());
+        //     kafkaProducer.send(kafkaUserDto, "email-topic");
+        //
+        //     // apiPayment.winResult(purchasedTicket.getUserId(), result, getPrize(result));
+        //     // apiPayment.winResult("11111111-1111-1111-1111-111111111111", result, getPrize(result));
+        // }
 
         return result;
     }
