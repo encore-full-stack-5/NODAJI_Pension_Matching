@@ -10,11 +10,14 @@ import com.example.pensionMatching.domain.entity.PensionBonusNum;
 import com.example.pensionMatching.domain.entity.PensionWinNum;
 import com.example.pensionMatching.domain.entity.PurchasedTickets;
 import com.example.pensionMatching.domain.repository.PurchasedTicketsRepository;
+import com.example.pensionMatching.global.util.TokenInfo;
 import com.example.pensionMatching.kafka.dto.KafkaStatus;
 import com.example.pensionMatching.kafka.producer.KafkaProducer;
 import jakarta.transaction.Transactional;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
@@ -40,25 +43,38 @@ public class PensionMatchingServiceImpl implements PensionMatchingService, Ticke
         List<PurchasedTickets> purchasedTickets = purchasedTicketsRepository.findByRound(
             drawResult.pensionWinNum().getDrawRound());
         // apiWinDraw.getPurchasedTickets(drawResult.pensionWinNum().getDrawRound());
+        System.out.println(purchasedTickets);
 
         purchasedTickets.forEach((purchasedTicket) -> {
             Integer result = ticketWinMatching(drawResult, purchasedTicket);
             purchasedTicket.setResult(result);
             purchasedTicket.setDrawDate(drawResult.pensionWinNum().getDrawDate());
         });
+
+        Set<String> userIdsWithPositiveResult = purchasedTickets.stream()
+            .filter(purchasedTicket -> purchasedTicket.getResult() > 0)
+            .map(PurchasedTickets::getUserId)
+            .collect(Collectors.toSet());
+
+        userIdsWithPositiveResult.forEach(userId -> {
+            KafkaUserDto kafkaUserDto = new KafkaUserDto(userId,
+                1, "연금복권", 1, drawResult.pensionWinNum().getDrawRound());
+            kafkaProducer.send(kafkaUserDto, "email-topic");
+        });
+
     }
 
     @Override
-    public List<TicketResult> getAllTicket(String userId) {
-        return purchasedTicketsRepository.findByUserId(userId);
+    public List<TicketResult> getAllTicket(TokenInfo tokenInfo) {
+        return purchasedTicketsRepository.findByUserId(tokenInfo.userId());
     }
 
     @Override
-    public List<TicketResult> getAllTicketByResult(String userId, Integer result) {
+    public List<TicketResult> getAllTicketByResult(TokenInfo tokenInfo, Integer result) {
         if (result > 0) {
-            return purchasedTicketsRepository.findByUserIdAndResultGreaterThan(userId, 0);
+            return purchasedTicketsRepository.findByUserIdAndResultGreaterThan(tokenInfo.userId(), 0);
         } else {
-            return purchasedTicketsRepository.findByUserIdAndResultIs(userId, 0);
+            return purchasedTicketsRepository.findByUserIdAndResultIs(tokenInfo.userId(), 0);
         }
     }
 
@@ -106,15 +122,14 @@ public class PensionMatchingServiceImpl implements PensionMatchingService, Ticke
             result = ticketBonusMatching(drawResult.pensionBonusNum(), purchasedTicket, result);
         }
 
-        if (result > 0) {
-            // KafkaUserDto kafkaUserDto = new KafkaUserDto(purchasedTicket.getUserId(),
-            KafkaUserDto kafkaUserDto = new KafkaUserDto("11111111-1111-1111-1111-111111111111",
-                getPrize(result), "연금복권", result);
-            kafkaProducer.send(kafkaUserDto, "email-topic");
-
-            // apiPayment.winResult(purchasedTicket.getUserId(), result, getPrize(result));
-            // apiPayment.winResult("11111111-1111-1111-1111-111111111111", result, getPrize(result));
-        }
+        // if (result > 0) {
+        //     KafkaUserDto kafkaUserDto = new KafkaUserDto(purchasedTicket.getUserId(),
+        //         getPrize(result), "연금복권", result, purchasedTicket.getRound());
+        //     kafkaProducer.send(kafkaUserDto, "email-topic");
+        //
+        //     // apiPayment.winResult(purchasedTicket.getUserId(), result, getPrize(result));
+        //     // apiPayment.winResult("11111111-1111-1111-1111-111111111111", result, getPrize(result));
+        // }
 
         return result;
     }

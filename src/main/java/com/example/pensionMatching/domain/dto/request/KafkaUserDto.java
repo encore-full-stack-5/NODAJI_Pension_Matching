@@ -4,7 +4,8 @@ public record KafkaUserDto(
     String id,
     long point,
     String game,
-    int rank
+    int rank,
+    int round
 ) {
     @Override
     public String toString() {
@@ -13,6 +14,7 @@ public record KafkaUserDto(
             ", point=" + point +
             ", game='" + game + '\'' +
             ", rank=" + rank +
+            ", round=" + round +
             '}';
     }
 }
