@@ -1,4 +1,4 @@
-package com.example.domain.entity;
+package com.example.pensionMatching.domain.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -6,11 +6,13 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Getter
@@ -29,12 +31,6 @@ public class PurchasedTickets {
 
     @Column(name = "USER_ID")
     private String userId;
-
-    @Column(name = "USER_EMAIL")
-    private String userEmail;
-
-    @Column(name = "USER_ACC_BALANCE")
-    private Long userAccBalance;
 
     @Column(name = "GROUP_NUM")
     private Integer groupNum;
@@ -58,6 +54,12 @@ public class PurchasedTickets {
     private Integer sixth;
 
     @Column(name = "CREATE_AT")
-    private LocalDateTime createAt;
+    private LocalDate createAt;
+
+    @Column(name = "RESULT", nullable = false) @Setter
+    private Integer result = 0;
+
+    @Column(name = "DRAW_DATE") @Setter
+    private LocalDate drawDate;
 
 }
