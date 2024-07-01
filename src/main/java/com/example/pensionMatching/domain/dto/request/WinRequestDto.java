@@ -1,7 +1,7 @@
 package com.example.pensionMatching.domain.dto.request;
 
 public record WinRequestDto(
-    String type,
+    String userId,
     Integer leftMonths,
     Long amount
 ) {
