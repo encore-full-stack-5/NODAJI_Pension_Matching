@@ -2,24 +2,19 @@ package com.example.pensionMatching.service;
 
 
 import com.example.pensionMatching.api.ApiPayment;
-import com.example.pensionMatching.api.ApiWinDraw;
 import com.example.pensionMatching.domain.dto.request.KafkaUserDto;
 import com.example.pensionMatching.domain.dto.request.PensionWinAndBonus;
 import com.example.pensionMatching.domain.dto.response.TicketResult;
 import com.example.pensionMatching.domain.entity.PensionBonusNum;
-import com.example.pensionMatching.domain.entity.PensionWinNum;
 import com.example.pensionMatching.domain.entity.PurchasedTickets;
 import com.example.pensionMatching.domain.repository.PurchasedTicketsRepository;
 import com.example.pensionMatching.global.util.TokenInfo;
-import com.example.pensionMatching.kafka.dto.KafkaStatus;
 import com.example.pensionMatching.kafka.producer.KafkaProducer;
 import jakarta.transaction.Transactional;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -27,7 +22,6 @@ import org.springframework.stereotype.Service;
 
 public class PensionMatchingServiceImpl implements PensionMatchingService, TicketService {
 
-    private final ApiWinDraw apiWinDraw;
     private final ApiPayment apiPayment;
     private final PurchasedTicketsRepository purchasedTicketsRepository;
     private final KafkaProducer kafkaProducer;
@@ -42,7 +36,6 @@ public class PensionMatchingServiceImpl implements PensionMatchingService, Ticke
     public void matchingTicket(PensionWinAndBonus drawResult) {
         List<PurchasedTickets> purchasedTickets = purchasedTicketsRepository.findByRound(
             drawResult.pensionWinNum().getDrawRound());
-        // apiWinDraw.getPurchasedTickets(drawResult.pensionWinNum().getDrawRound());
         System.out.println(purchasedTickets);
 
         purchasedTickets.forEach((purchasedTicket) -> {
@@ -122,14 +115,9 @@ public class PensionMatchingServiceImpl implements PensionMatchingService, Ticke
             result = ticketBonusMatching(drawResult.pensionBonusNum(), purchasedTicket, result);
         }
 
-        // if (result > 0) {
-        //     KafkaUserDto kafkaUserDto = new KafkaUserDto(purchasedTicket.getUserId(),
-        //         getPrize(result), "연금복권", result, purchasedTicket.getRound());
-        //     kafkaProducer.send(kafkaUserDto, "email-topic");
-        //
-        //     // apiPayment.winResult(purchasedTicket.getUserId(), result, getPrize(result));
-        //     // apiPayment.winResult("11111111-1111-1111-1111-111111111111", result, getPrize(result));
-        // }
+        if (result > 0) {
+            apiPayment.winResult(purchasedTicket.getUserId(), result, getPrize(result));
+        }
 
         return result;
     }
