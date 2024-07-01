@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 @FeignClient(name = "feignPayment", url = "34.46.237.231:30602")
 public interface FeignPayment {
 
-    @PostMapping("/api/v1/win/{userId}")
-    void winResult(@PathVariable String userId, @RequestBody WinRequestDto winRequestDto);
+    @PostMapping("/api/v1/pension")
+    void winResult(@RequestBody WinRequestDto winRequestDto);
 
 }

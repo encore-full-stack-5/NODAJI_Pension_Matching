@@ -19,9 +19,9 @@ public class ApiPayment {
     @Async
     public void winResult(String userId, Integer result, Long amount) {
         Integer month = leftMonths(result);
-        WinRequestDto winRequestDto = new WinRequestDto("연금복권", month, amount);
+        WinRequestDto winRequestDto = new WinRequestDto(userId, month, amount);
         try {
-            feignPayment.winResult(userId, winRequestDto);
+            feignPayment.winResult(winRequestDto);
         } catch (Exception e) {
             Map<String , Object> map = new HashMap<>();
             map.put("win", winRequestDto);
